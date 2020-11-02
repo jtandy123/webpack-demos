@@ -1,9 +1,6 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import '../common/common';
-import logo from '../images/big.png';
-import { a } from './tree-shaking';
-import './index.less';
+const React = require('react');
+const logo = require('../images/big.png');
+require('./index.less');
 
 class Search extends React.Component {
   constructor(props) {
@@ -15,18 +12,16 @@ class Search extends React.Component {
   }
 
   loadComponent = () => {
-        import('./text.js').then((Text) => this.setState({ Text: Text.default }));
+        import('./text.js').then(Text => this.setState({ Text: Text.default }));
   };
 
   render() {
     const { Text } = this.state;
-    const funcA = a();
     return (
       <div className="search-text">
         {
           Text ? <Text /> : null
         }
-        {funcA}
         搜索文字的内容
         <img src={logo} onKeyDown={this.loadComponent} alt="" />
       </div>
@@ -34,7 +29,4 @@ class Search extends React.Component {
   }
 }
 
-ReactDOM.render(
-  <Search />,
-  document.getElementById('root'),
-);
+module.exports = <Search />;

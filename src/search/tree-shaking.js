@@ -1,8 +1,7 @@
 export function a() {
-    let a = 1;
-    return 'this is func a' + (a++);
+  return 'this is func a';
 }
 
 export function b() {
-    return 'this is func b';
+  return 'this is func b';
 }

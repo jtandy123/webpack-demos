@@ -1,44 +1,42 @@
-const path = require('path');
 const glob = require('glob');
+const path = require('path');
 const webpack = require('webpack');
-// const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const OptimizeCSSAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
-// const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const autoPrefixer = require('autoprefixer');
-
-const isPublish = process.env.NODE_ENV === 'production';
 
 const setMPA = () => {
   const entry = {};
   const htmlWebpackPlugins = [];
+  const entryFiles = glob.sync(path.join(__dirname, './src/*/index-server.js'));
 
-  const entryFiles = glob.sync(path.resolve(__dirname, './src/*/index.js'));
   Object.keys(entryFiles).forEach((index) => {
     const entryFile = entryFiles[index];
 
-    const match = entryFile.match(/src\/(.*)\/index.js/);
+    const match = entryFile.match(/src\/(.*)\/index-server\.js/);
     const pageName = match && match[1];
 
-    entry[pageName] = entryFile;
-    htmlWebpackPlugins.push(
-      new HtmlWebpackPlugin({
-        template: path.join(__dirname, `src/${pageName}/index.html`),
-        filename: `${pageName}.html`,
-        chunks: ['commons', 'vendors', pageName],
-        inject: true,
-        minify: {
-          html5: true,
-          collapseWhitespace: true,
-          preserveLineBreaks: false,
-          minifyCSS: true,
-          minifyJS: true,
-          removeComments: false,
-        },
-      }),
-    );
+    if (pageName) {
+      entry[pageName] = entryFile;
+      htmlWebpackPlugins.push(
+        new HtmlWebpackPlugin({
+          template: path.join(__dirname, `src/${pageName}/index.html`),
+          filename: `${pageName}.html`,
+          chunks: ['commons', 'vendors', pageName],
+          inject: true,
+          minify: {
+            html5: true,
+            collapseWhitespace: true,
+            preserveLineBreaks: false,
+            minifyCSS: true,
+            minifyJS: true,
+            removeComments: false,
+          },
+        }),
+      );
+    }
   });
 
   return {
@@ -50,15 +48,12 @@ const setMPA = () => {
 const { entry, htmlWebpackPlugins } = setMPA();
 
 const config = {
-  devtool: 'cheap-source-map',
   mode: 'none',
   entry,
   output: {
-    publicPath: '', // 知道如何寻找资源
-    path: path.resolve(__dirname, 'dist'), // 必须使用绝对路径，输出文件夹
-    // 希望缓存生效，就应该每次在更改代码以后修改文件名
-    // [chunkhash]会自动根据文件是否更改而更换哈希, [hash]起不到缓存依赖库的作用
-    filename: '[name].[chunkhash:8].js', // 打包后输出文件的文件名
+    path: path.join(__dirname, 'dist'),
+    filename: '[name]-server.js',
+    libraryTarget: 'umd',
   },
   resolve: {
     extensions: ['.js', '.css', '.json'],
@@ -159,10 +154,7 @@ const config = {
     }],
   },
   plugins: [
-    new CleanWebpackPlugin(['dist'], {
-      verbose: true, // 打印日志
-      dry: false, // 删除文件，Use boolean "true" to test/emulate delete. (will not remove files).
-    }),
+    new CleanWebpackPlugin(),
     // webpack 4中已经移除webpack.optimize.CommonsChunkPlugin插件，推荐使用config.optimization.splitChunks来代替
     /*
         new webpack.optimize.CommonsChunkPlugin({
@@ -224,36 +216,8 @@ const config = {
     // })
   ].concat(htmlWebpackPlugins),
   optimization: {
-    splitChunks: {
-      minSize: 0,
-      cacheGroups: {
-        vendors: {
-          test: /(react|react-dom)/,
-          name: 'vendors',
-          chunks: 'all',
-        },
-        commons: {
-          name: 'commons',
-          chunks: 'all',
-          minChunks: 2,
-        },
-      },
-    },
+    splitChunks: false, // 必须设为false，SSR才会正常工作
   },
 };
-
-if (isPublish) {
-  // webpack 4中已经移除webpack.optimize.UglifyJsPlugin，推荐使用config.optimization.minimize来代替
-  /*
-    config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-        compress: {
-            warnings: false
-        },
-        mangle:{
-            except:['$super','$','exports','require']
-        }
-    }));
-    */
-}
 
 module.exports = config;
