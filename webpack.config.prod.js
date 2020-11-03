@@ -8,6 +8,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const OptimizeCSSAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
 // const HtmlWebpackExternalsPlugin = require('html-webpack-externals-plugin');
 const autoPrefixer = require('autoprefixer');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 
 const isPublish = process.env.NODE_ENV === 'production';
 
@@ -159,10 +160,7 @@ const config = {
     }],
   },
   plugins: [
-    new CleanWebpackPlugin(['dist'], {
-      verbose: true, // 打印日志
-      dry: false, // 删除文件，Use boolean "true" to test/emulate delete. (will not remove files).
-    }),
+    new CleanWebpackPlugin(),
     // webpack 4中已经移除webpack.optimize.CommonsChunkPlugin插件，推荐使用config.optimization.splitChunks来代替
     /*
         new webpack.optimize.CommonsChunkPlugin({
@@ -222,6 +220,7 @@ const config = {
     //         }
     //     ]
     // })
+    new FriendlyErrorsWebpackPlugin(),
   ].concat(htmlWebpackPlugins),
   optimization: {
     splitChunks: {
@@ -240,6 +239,7 @@ const config = {
       },
     },
   },
+  stats: 'errors-only',
 };
 
 if (isPublish) {

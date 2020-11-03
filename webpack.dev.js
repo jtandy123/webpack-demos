@@ -6,6 +6,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const OptimizeCSSAssetsWebpackPlugin = require('optimize-css-assets-webpack-plugin');
 const autoPrefixer = require('autoprefixer');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 
 // const isPublish = process.env.NODE_ENV === 'production';
 
@@ -64,6 +65,7 @@ const config = {
     contentBase: './dist',
     // hot: true,
     port: 8081,
+    stats: 'errors-only',
   },
   resolve: {
     extensions: ['.js', '.css', '.json'],
@@ -117,7 +119,7 @@ const config = {
           options: {
             plugins: () => [
               autoPrefixer({
-                browsers: ['last 2 version', '> 1%', 'iOS 7'],
+                // browsers: ['last 2 version', '> 1%', 'iOS 7'],
               }),
             ],
           },
@@ -168,7 +170,7 @@ const config = {
         }),
         */
     new MiniCssExtractPlugin({
-      filename: '[name].[contenthash:8].[ext]',
+      filename: '[name].[contenthash:8].css',
     }),
     // 压缩提取出的CSS，并解决ExtractTextPlugin分离出的CSS重复问题
     new OptimizeCSSAssetsWebpackPlugin({
@@ -177,7 +179,9 @@ const config = {
       },
     }),
     // new webpack.HotModuleReplacementPlugin()
+    new FriendlyErrorsWebpackPlugin(),
   ].concat(htmlWebpackPlugins),
+  stats: { children: false },
 };
 
 module.exports = config;
